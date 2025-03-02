@@ -17,6 +17,10 @@ function App() {
   // Handle sale submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!sale.fuel_type) {
+      alert("Please select a fuel type.");
+      return;
+    }
     try {
       const response = await fetch(`${API_URL}/api/sales`, {
         method: 'POST',
@@ -29,22 +33,6 @@ function App() {
       }
       console.log('Sale logged successfully');
       setSale({ fuel_type: '', quantity: '', price: '', date: '' }); // Reset form
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
-  // Add a customer
-  const addCustomer = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/customers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: customer.name }),
-      });
-      if (!response.ok) throw new Error('Failed to add customer');
-      console.log('Customer added successfully');
-      setCustomer({ name: '', points: '' }); // Reset form
     } catch (error) {
       alert(error.message);
     }
