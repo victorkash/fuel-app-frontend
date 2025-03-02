@@ -16,28 +16,28 @@ function App() {
 
   // Handle sale submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!sale.fuel_type) {
-      alert("Please select a fuel type.");
-      return;
+  e.preventDefault();
+  if (!sale.fuel_type) {
+    alert("Please select a fuel type.");
+    return;
+  }
+  try {
+    console.log('Data being sent:', sale); // Added here
+    const response = await fetch(`${API_URL}/api/sales`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sale),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to log sale');
     }
-    try {
-      const response = await fetch(`${API_URL}/api/sales`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sale),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to log sale');
-      }
-      console.log('Sale logged successfully');
-      setSale({ fuel_type: '', quantity: '', price: '', date: '' }); // Reset form
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
+    console.log('Sale logged successfully');
+    setSale({ fuel_type: '', quantity: '', price: '', date: '' }); // Reset form
+  } catch (error) {
+    alert(error.message);
+  }
+};
   // Reward points to a customer
   const rewardCustomer = async () => {
     if (!customer.name || !customer.points) {
