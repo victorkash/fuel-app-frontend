@@ -114,12 +114,15 @@ function App() {
         <section>
           <h2>Sales Tracking</h2>
           <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Fuel Type"
+            <select
               value={sale.fuel_type}
               onChange={(e) => setSale({ ...sale, fuel_type: e.target.value })}
-            />
+            >
+              <option value="">Select Fuel Type</option>
+              <option value="Petrol">Petrol</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Kerosine">Kerosine</option>
+            </select>
             <input
               type="number"
               placeholder="Quantity"
@@ -137,7 +140,9 @@ function App() {
               value={sale.date}
               onChange={(e) => setSale({ ...sale, date: e.target.value })}
             />
-            <button type="submit">Log Sale</button>
+            <button type="submit" disabled={!sale.fuel_type}>
+              Log Sale
+            </button>
           </form>
         </section>
 
@@ -218,7 +223,6 @@ function App() {
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
             />
-            <button type="button" onClick={addCustomer}>Add Customer</button>
             <input
               type="number"
               placeholder="Points"
