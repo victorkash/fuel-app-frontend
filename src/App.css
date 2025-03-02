@@ -1,0 +1,141 @@
+/* frontend/src/App.css */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  background-color: #2c3e50;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+section {
+  flex: 1;
+  min-width: 300px;
+  background-color: #ecf0f1;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  color: #34495e;
+  margin-bottom: 15px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input, button {
+  padding: 10px;
+  border: 1px solid #bdc3c7;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-bottom: 20px;
+}
+
+button:hover {
+  background-color: #116fad;
+}
+
+ul {
+  list-style: none;
+  margin-top: 10px;
+}
+
+li {
+  padding: 5px 0;
+  color: #2c3e50;
+}
+
+.chart-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap; /* Stacks charts on small screens */
+}
+
+.chart {
+  flex: 1;
+  min-width: 300px; /* Keeps charts readable */
+}
+
+button {
+  margin: 5px;
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #45a049;
+}
+
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.date-inputs {
+  margin-top: 10px;
+}
+
+.date-inputs label {
+  margin-right: 5px;
+}
+
+.date-inputs input {
+  margin-right: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+button {
+  margin-right: 10px;
+  padding: 5px 10px;
+}
