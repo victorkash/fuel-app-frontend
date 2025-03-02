@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import './App.css';
 
 function App() {
-  const API_URL = 'https://fuel-app-backend.onrender.com';
+  const API_URL = 'https://fuel-app-backend-1.onrender.com';
   const [sale, setSale] = useState({ fuel_type: '', quantity: '', price: '', date: '' });
   const [filter, setFilter] = useState('alltime'); // Default to "All Time"
   const [startDate, setStartDate] = useState(''); // Start date for custom range
