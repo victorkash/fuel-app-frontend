@@ -10,34 +10,58 @@ const SalesChart = ({ filter, startDate, endDate }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      let url = `http://127.0.0.1:5000/api/sales_by_type?filter=${filter}`;
-      if (filter === 'custom' && startDate && endDate) {
-        url += `&start_date=${startDate}&end_date=${endDate}`;
-      }
       try {
+        // Use environment variable for API base URL
+        const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        let url = `${baseUrl}/api/sales_by_type?filter=${filter}`;
+        
+        if (filter === 'custom') {
+          if (!startDate || !endDate) {
+            setError('Please select both start and end dates');
+            return;
+          }
+          url += `&start_date=${startDate}&end_date=${endDate}`;
+        }
+
         const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+        
         if (data.error) {
           setError(data.error);
           setChartData({ labels: [], datasets: [] });
-        } else {
-          setError(null);
-          const labels = data.map(item => item.fuel_type); // Fuel types
-          const quantities = data.map(item => item.total_quantity); // Quantities
-          setChartData({
-            labels,
-            datasets: [{
-              label: 'Total Quantity Sold',
-              data: quantities,
-              backgroundColor: 'rgba(32, 0, 150, 0.53)',
-            }],
-          });
+          return;
         }
+
+        if (data.length === 0) {
+          setError('No data available for selected period');
+          setChartData({ labels: [], datasets: [] });
+          return;
+        }
+
+        const labels = data.map(item => item.fuel_type);
+        const quantities = data.map(item => item.total_quantity);
+        
+        setChartData({
+          labels,
+          datasets: [{
+            label: 'Total Quantity Sold',
+            data: quantities,
+            backgroundColor: 'rgba(32, 0, 150, 0.53)',
+          }],
+        });
+        setError(null);
+
       } catch (err) {
-        setError('Failed to fetch sales data');
+        setError(err.message || 'Failed to fetch sales data');
         setChartData({ labels: [], datasets: [] });
       }
     };
+
     fetchData();
   }, [filter, startDate, endDate]);
 
@@ -49,7 +73,7 @@ const SalesChart = ({ filter, startDate, endDate }) => {
       ) : chartData.labels.length > 0 ? (
         <Bar data={chartData} />
       ) : (
-        <p>No data available for this period.</p>
+        !error && <p>No data available for this period.</p>
       )}
     </div>
   );
