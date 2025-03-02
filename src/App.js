@@ -218,6 +218,7 @@ function App() {
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
             />
+            <button type="button" onClick={addCustomer}>Add Customer</button>
             <input
               type="number"
               placeholder="Points"
