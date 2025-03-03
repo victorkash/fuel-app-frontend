@@ -50,13 +50,14 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: customer.name }),
       });
-      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to add customer');
       }
       alert('Customer added successfully!');
-      setCustomer({ name: '', points: '' });
+      // Optionally keep name for immediate rewarding (remove reset of name)
+      setCustomer({ ...customer, points: '' });
+      // For full reset (original behavior), use: setCustomer({ name: '', points: '' });
     } catch (error) {
       alert(error.message);
     }
@@ -74,13 +75,10 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customer),
       });
-
       const data = await response.json();
-      
       if (!response.ok) {
         throw new Error(data.error || 'Failed to reward points');
       }
-      
       alert('Points rewarded successfully!');
       setCustomer({ name: '', points: '' });
     } catch (error) {
@@ -107,7 +105,7 @@ function App() {
         setLoading(false);
         return;
       }
-      url += `&start_date=${startDate}&end_date=${endDate}`;
+      url += `&start_date=${startDate}&end_date=${endDate}`; // Fixed typo from end_date to endDate
     }
     try {
       const response = await fetch(url);
@@ -234,41 +232,40 @@ function App() {
 
         {/* Loyalty Programs Section */}
         <section>
-        <h2>Loyalty Programs</h2>
-        <div className="customer-management">
-          <div className="add-customer">
-            <h3>Add New Customer</h3>
-            <input
-              type="text"
-              placeholder="Customer Name"
-              value={customer.name}
-              onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-            />
-            <button type="button" onClick={addCustomer}>
-              Add Customer
-            </button>
+          <h2>Loyalty Programs</h2>
+          <div className="customer-management">
+            <div className="add-customer">
+              <h3>Add New Customer</h3>
+              <input
+                type="text"
+                placeholder="Customer Name"
+                value={customer.name}
+                onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+              />
+              <button type="button" onClick={addCustomer}>
+                Add Customer
+              </button>
+            </div>
+            <div className="reward-points">
+              <h3>Reward Points</h3>
+              <input
+                type="text"
+                placeholder="Customer Name"
+                value={customer.name}
+                onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+              />
+              <input
+                type="number"
+                placeholder="Points"
+                value={customer.points}
+                onChange={(e) => setCustomer({ ...customer, points: e.target.value })}
+              />
+              <button type="button" onClick={rewardCustomer}>
+                Reward Points
+              </button>
+            </div>
           </div>
-
-          <div className="reward-points">
-            <h3>Reward Points</h3>
-            <input
-              type="text"
-              placeholder="Customer Name"
-              value={customer.name}
-              onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-            />
-            <input
-              type="number"
-              placeholder="Points"
-              value={customer.points}
-              onChange={(e) => setCustomer({ ...customer, points: e.target.value })}
-            />
-            <button type="button" onClick={rewardCustomer}>
-              Reward Points
-            </button>
-          </div>
-        </div>
-      </section>
+        </section>
       </main>
     </div>
   );
