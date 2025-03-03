@@ -6,67 +6,61 @@ import './App.css';
 function App() {
   const API_URL = 'https://fuel-app-backend-1.onrender.com';
   const [sale, setSale] = useState({ fuel_type: '', quantity: '', price: '', date: '' });
-  const [filter, setFilter] = useState('alltime');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [reportData, setReportData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('alltime'); // Default to "All Time"
+  const [startDate, setStartDate] = useState(''); // Start date for custom range
+  const [endDate, setEndDate] = useState(''); // End date for custom range
+  const [reportData, setReportData] = useState([]); // Data for the report table
+  const [loading, setLoading] = useState(false); // Loading state for report generation
+  const [error, setError] = useState(null); // Error messages
   const [customer, setCustomer] = useState({ name: '', points: '' });
 
   // Handle sale submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!sale.fuel_type) {
-      alert("Please select a fuel type.");
-      return;
+  e.preventDefault();
+  if (!sale.fuel_type) {
+    alert("Please select a fuel type.");
+    return;
+  }
+  try {
+    console.log('Data being sent:', sale); // Added here
+    const response = await fetch(`${API_URL}/api/sales`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sale),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to log sale');
     }
-    try {
-      const response = await fetch(`${API_URL}/api/sales`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sale),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to log sale');
-      }
-      setSale({ fuel_type: '', quantity: '', price: '', date: '' });
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
+    console.log('Sale logged successfully');
+    setSale({ fuel_type: '', quantity: '', price: '', date: '' }); // Reset form
+  } catch (error) {
+    alert(error.message);
+  }
+};
   // Reward points to a customer
   const rewardCustomer = async () => {
-    // Trim whitespace from name and check both fields
-    const trimmedName = customer.name.trim();
-    const pointsValue = customer.points; // Keep as string, backend can handle it
-
-    if (!trimmedName || !pointsValue) {
-      alert('Please provide both customer name and points.');
-      return;
+  if (!customer.name || !customer.points) {
+    alert('Please provide both customer name and points.');
+    return;
+  }
+  console.log('Sending reward request with:', customer); // Add this line
+  try {
+    const response = await fetch(`${API_URL}/api/reward`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(customer),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to reward points');
     }
-
-    try {
-      const response = await fetch(`${API_URL}/api/reward`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmedName, points: pointsValue }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to reward points');
-      }
-
-      alert('Points rewarded successfully!');
-      // Only reset after success
-      setCustomer({ name: '', points: '' });
-    } catch (error) {
-      alert(error.message);
-    }
-  };
+    alert('Points rewarded successfully!');
+    setCustomer({ name: '', points: '' });
+  } catch (error) {
+    alert(error.message);
+  }
+};
 
   // Generate report based on filter and date range
   const generateReport = async () => {
@@ -79,7 +73,7 @@ function App() {
         setLoading(false);
         return;
       }
-      url += `&start_date=${startDate}&end_date=${end_date}`;
+      url += `&start_date=${startDate}&end_date=${endDate}`;
     }
     try {
       const response = await fetch(url);
@@ -105,6 +99,7 @@ function App() {
         <h1>Ammica Fuel Management Dashboard</h1>
       </header>
       <main>
+        {/* Sales Tracking Section */}
         <section>
           <h2>Sales Tracking</h2>
           <form onSubmit={handleSubmit}>
@@ -140,8 +135,10 @@ function App() {
           </form>
         </section>
 
+        {/* Reports & Analytics Section */}
         <section>
           <h2>Reports & Analytics</h2>
+          {/* Filter Controls */}
           <div>
             <h3>Filter Options</h3>
             <button onClick={() => setFilter('alltime')}>All Time</button>
@@ -163,12 +160,18 @@ function App() {
               </div>
             )}
           </div>
+
+          {/* Sales by Fuel Type Chart */}
           <div>
             <SalesChart filter={filter} startDate={startDate} endDate={endDate} />
           </div>
+
+          {/* Sales Over Time Chart */}
           <div>
             <SalesOverTimeChart filter={filter} startDate={startDate} endDate={endDate} />
           </div>
+
+          {/* Generate Report Button and Table */}
           <div>
             <button onClick={generateReport} disabled={loading}>
               {loading ? 'Generating...' : 'Generate Report'}
@@ -199,6 +202,7 @@ function App() {
           </div>
         </section>
 
+        {/* Loyalty Programs Section */}
         <section>
           <h2>Loyalty Programs</h2>
           <form onSubmit={(e) => e.preventDefault()}>
@@ -214,9 +218,7 @@ function App() {
               value={customer.points}
               onChange={(e) => setCustomer({ ...customer, points: e.target.value })}
             />
-            <button type="button" onClick={rewardCustomer}>
-              Reward Points
-            </button>
+            <button type="button" onClick={rewardCustomer}>Reward Points</button>
           </form>
         </section>
       </main>
