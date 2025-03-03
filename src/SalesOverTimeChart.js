@@ -61,7 +61,7 @@ const SalesOverTimeChart = ({ filter, startDate, endDate }) => {
         setChartData({
           labels,
           datasets: [{
-            label: 'Total Sales ($)',
+            label: 'Total Sales (₦)',
             data: salesData,
             borderColor: 'rgb(75, 192, 192)',
             tension: 0.1,
