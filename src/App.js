@@ -6,61 +6,95 @@ import './App.css';
 function App() {
   const API_URL = 'https://fuel-app-backend-1.onrender.com';
   const [sale, setSale] = useState({ fuel_type: '', quantity: '', price: '', date: '' });
-  const [filter, setFilter] = useState('alltime'); // Default to "All Time"
-  const [startDate, setStartDate] = useState(''); // Start date for custom range
-  const [endDate, setEndDate] = useState(''); // End date for custom range
-  const [reportData, setReportData] = useState([]); // Data for the report table
-  const [loading, setLoading] = useState(false); // Loading state for report generation
-  const [error, setError] = useState(null); // Error messages
+  const [filter, setFilter] = useState('alltime');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [reportData, setReportData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [customer, setCustomer] = useState({ name: '', points: '' });
 
   // Handle sale submission
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!sale.fuel_type) {
-    alert("Please select a fuel type.");
-    return;
-  }
-  try {
-    console.log('Data being sent:', sale); // Added here
-    const response = await fetch(`${API_URL}/api/sales`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(sale),
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to log sale');
+    e.preventDefault();
+    if (!sale.fuel_type) {
+      alert("Please select a fuel type.");
+      return;
     }
-    console.log('Sale logged successfully');
-    setSale({ fuel_type: '', quantity: '', price: '', date: '' }); // Reset form
-  } catch (error) {
-    alert(error.message);
-  }
-};
+    try {
+      const response = await fetch(`${API_URL}/api/sales`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sale),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to log sale');
+      }
+      alert('Sale logged successfully!');
+      setSale({ fuel_type: '', quantity: '', price: '', date: '' });
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  // Add new customer
+  const addCustomer = async () => {
+    if (!customer.name) {
+      alert('Please enter customer name');
+      return;
+    }
+    try {
+      const response = await fetch(`${API_URL}/api/customers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: customer.name }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add customer');
+      }
+      alert('Customer added successfully!');
+      setCustomer({ name: '', points: '' });
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   // Reward points to a customer
   const rewardCustomer = async () => {
-  if (!customer.name || !customer.points) {
-    alert('Please provide both customer name and points.');
-    return;
-  }
-  console.log('Sending reward request with:', customer); // Add this line
-  try {
-    const response = await fetch(`${API_URL}/api/reward`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(customer),
-    });
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to reward points');
+    if (!customer.name || !customer.points) {
+      alert('Please provide both customer name and points.');
+      return;
     }
-    alert('Points rewarded successfully!');
-    setCustomer({ name: '', points: '' });
-  } catch (error) {
-    alert(error.message);
-  }
-};
+    try {
+      const response = await fetch(`${API_URL}/api/reward`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(customer),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to reward points');
+      }
+      
+      alert('Points rewarded successfully!');
+      setCustomer({ name: '', points: '' });
+    } catch (error) {
+      if (error.message.includes('Customer not found')) {
+        const shouldAdd = window.confirm('Customer not found. Would you like to add them?');
+        if (shouldAdd) {
+          await addCustomer();
+          await rewardCustomer(); // Retry rewarding after adding
+        }
+      } else {
+        alert(error.message);
+      }
+    }
+  };
 
   // Generate report based on filter and date range
   const generateReport = async () => {
@@ -79,12 +113,8 @@ function App() {
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch report');
       const data = await response.json();
-      if (data.error) {
-        setError(data.error);
-        setReportData([]);
-      } else {
-        setReportData(data);
-      }
+      setReportData(data.error ? [] : data);
+      setError(data.error || null);
     } catch (err) {
       setError(err.message);
       setReportData([]);
@@ -204,8 +234,23 @@ function App() {
 
         {/* Loyalty Programs Section */}
         <section>
-          <h2>Loyalty Programs</h2>
-          <form onSubmit={(e) => e.preventDefault()}>
+        <h2>Loyalty Programs</h2>
+        <div className="customer-management">
+          <div className="add-customer">
+            <h3>Add New Customer</h3>
+            <input
+              type="text"
+              placeholder="Customer Name"
+              value={customer.name}
+              onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+            />
+            <button type="button" onClick={addCustomer}>
+              Add Customer
+            </button>
+          </div>
+
+          <div className="reward-points">
+            <h3>Reward Points</h3>
             <input
               type="text"
               placeholder="Customer Name"
@@ -218,9 +263,12 @@ function App() {
               value={customer.points}
               onChange={(e) => setCustomer({ ...customer, points: e.target.value })}
             />
-            <button type="button" onClick={rewardCustomer}>Reward Points</button>
-          </form>
-        </section>
+            <button type="button" onClick={rewardCustomer}>
+              Reward Points
+            </button>
+          </div>
+        </div>
+      </section>
       </main>
     </div>
   );
