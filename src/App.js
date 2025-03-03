@@ -40,26 +40,27 @@ function App() {
 };
   // Reward points to a customer
   const rewardCustomer = async () => {
-    if (!customer.name || !customer.points) {
-      alert('Please provide both customer name and points.');
-      return;
+  if (!customer.name || !customer.points) {
+    alert('Please provide both customer name and points.');
+    return;
+  }
+  console.log('Sending reward request with:', customer); // Add this line
+  try {
+    const response = await fetch(`${API_URL}/api/reward`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(customer),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to reward points');
     }
-    try {
-      const response = await fetch(`${API_URL}/api/reward`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(customer),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to reward points');
-      }
-      alert('Points rewarded successfully!');
-      setCustomer({ name: '', points: '' }); // Reset form
-    } catch (error) {
-      alert(error.message);
-    }
-  };
+    alert('Points rewarded successfully!');
+    setCustomer({ name: '', points: '' });
+  } catch (error) {
+    alert(error.message);
+  }
+};
 
   // Generate report based on filter and date range
   const generateReport = async () => {
