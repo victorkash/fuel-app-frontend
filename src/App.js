@@ -14,6 +14,7 @@ function App() {
   const [error, setError] = useState(null);
   const [customer, setCustomer] = useState({ name: '', points: '' });
 
+  // Handle sale submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!sale.fuel_type) {
@@ -21,7 +22,6 @@ function App() {
       return;
     }
     try {
-      console.log('Data being sent:', sale);
       const response = await fetch(`${API_URL}/api/sales`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -31,58 +31,44 @@ function App() {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to log sale');
       }
-      console.log('Sale logged successfully');
       setSale({ fuel_type: '', quantity: '', price: '', date: '' });
     } catch (error) {
       alert(error.message);
     }
   };
 
-  const addCustomer = async () => {
-    if (!customer.name) {
-      alert('Please provide a customer name.');
-      return;
-    }
-    try {
-      const response = await fetch(`${API_URL}/api/customers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: customer.name }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add customer');
-      }
-      alert('Customer added successfully!');
-      setCustomer({ name: '', points: '' });
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
+  // Reward points to a customer
   const rewardCustomer = async () => {
-    if (!customer.name || !customer.points) {
+    // Trim whitespace from name and check both fields
+    const trimmedName = customer.name.trim();
+    const pointsValue = customer.points; // Keep as string, backend can handle it
+
+    if (!trimmedName || !pointsValue) {
       alert('Please provide both customer name and points.');
       return;
     }
-    console.log('Sending reward request with:', customer);
+
     try {
       const response = await fetch(`${API_URL}/api/reward`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(customer),
+        body: JSON.stringify({ name: trimmedName, points: pointsValue }),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to reward points');
       }
+
       alert('Points rewarded successfully!');
+      // Only reset after success
       setCustomer({ name: '', points: '' });
     } catch (error) {
       alert(error.message);
     }
   };
 
+  // Generate report based on filter and date range
   const generateReport = async () => {
     setLoading(true);
     setError(null);
@@ -93,7 +79,7 @@ function App() {
         setLoading(false);
         return;
       }
-      url += `&start_date=${startDate}&end_date=${endDate}`;
+      url += `&start_date=${startDate}&end_date=${end_date}`;
     }
     try {
       const response = await fetch(url);
@@ -222,14 +208,15 @@ function App() {
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
             />
-            <button type="button" onClick={addCustomer}>Add Customer</button>
             <input
               type="number"
               placeholder="Points"
               value={customer.points}
               onChange={(e) => setCustomer({ ...customer, points: e.target.value })}
             />
-            <button type="button" onClick={rewardCustomer}>Reward Points</button>
+            <button type="button" onClick={rewardCustomer}>
+              Reward Points
+            </button>
           </form>
         </section>
       </main>
